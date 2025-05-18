@@ -31,20 +31,17 @@ app.add_middleware(
 )
 
 # MongoDB connection
+MONGODB_URL = os.getenv("MONGODB_URL")
+if not MONGODB_URL:
+    raise ValueError("MONGODB_URL environment variable is not set")
+
 try:
-    MONGODB_URL = os.getenv("MONGODB_URL")
-    if not MONGODB_URL:
-        raise ValueError("MONGODB_URL environment variable is not set")
-    
     client = AsyncIOMotorClient(MONGODB_URL)
-    # Test the connection
-    client.admin.command('ping')
-    logger.info("Successfully connected to MongoDB")
-    
     db = client.snapurl
     images = db.images
+    logger.info("Successfully connected to MongoDB")
 except Exception as e:
-    logger.error(f"Failed to connect to MongoDB: {str(e)}")
+    logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
 # Create uploads directory if it doesn't exist
@@ -89,11 +86,12 @@ async def upload_file(file: UploadFile = File(...)):
 @app.get("/api/images")
 async def get_images():
     try:
-        images = []
-        async for image in images.find().sort("uploaded_at", -1):
+        cursor = images.find().sort("uploaded_at", -1)
+        image_list = []
+        async for image in cursor:
             image["_id"] = str(image["_id"])
-            images.append(image)
-        return images
+            image_list.append(image)
+        return image_list
     except Exception as e:
         logger.error(f"Error fetching images: {e}")
         raise HTTPException(status_code=500, detail=str(e))
