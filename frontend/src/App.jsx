@@ -16,8 +16,7 @@ import {
 import { FiUpload, FiLink } from 'react-icons/fi'
 import axios from 'axios'
 
-// Update API URL to include the /api prefix
-const API_URL = 'http://localhost:8000/api'
+const API_URL = 'https://snapurl-xrth.onrender.com/api'
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -142,7 +141,7 @@ function App() {
             >
               <Image
                 src={image.url}
-                alt={image.filename}
+                alt={image.original_filename}
                 objectFit="cover"
                 h="200px"
                 w="full"
