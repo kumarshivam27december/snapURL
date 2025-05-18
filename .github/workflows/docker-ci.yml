@@ -22,10 +22,11 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 🔧 Build frontend image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/snapurl-frontend ./frontend
+        run: docker buildx build --load -t ${{ secrets.DOCKER_USERNAME }}/snapurl-frontend ./frontend
 
       - name: 🔧 Build backend image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/snapurl-backend ./backend
+        run: docker buildx build --load -t ${{ secrets.DOCKER_USERNAME }}/snapurl-backend ./backend
+
 
       - name: 🚀 Push frontend image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/snapurl-frontend
