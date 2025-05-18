@@ -2,7 +2,10 @@
 
 A modern full-stack web application for uploading and sharing images with unique URLs. Built with FastAPI, React, and MongoDB.
 
-## 🚀 Features
+
+DEMO: 
+
+##  Features
 
 - Image upload with drag-and-drop support
 - Instant URL generation for sharing
@@ -11,7 +14,7 @@ A modern full-stack web application for uploading and sharing images with unique
 - Dockerized for easy deployment
 - RESTful API with FastAPI
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Backend
 - Python 3.11
@@ -32,7 +35,7 @@ A modern full-stack web application for uploading and sharing images with unique
 - Docker Compose
 - MongoDB Atlas (optional)
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 snapurl/
@@ -52,7 +55,7 @@ snapurl/
 └── docker-compose.yml
 ```
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Docker and Docker Compose
@@ -95,7 +98,7 @@ npm install
 npm run dev
 ```
 
-## 📝 API Endpoints
+##  API Endpoints
 
 - `POST /upload` - Upload an image
 - `GET /images` - List all uploaded images
@@ -109,7 +112,7 @@ npm run dev
 ### Frontend
 - `VITE_API_URL` - Backend API URL
 
-## 📄 License
+##  License
 
 MIT
 
