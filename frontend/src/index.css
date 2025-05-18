@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +65,20 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+} */
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #2f2f2f, #c0392b, #f1c40f, #27ae60, #e91e63, #3498db);
+  background-size: 600% 600%;
+  animation: gradientFlow 20s ease infinite;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

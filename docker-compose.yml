@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: snapurl_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb+srv://admin:9955shivam7766@studdy.zxtdjuq.mongodb.net/snapurl?retryWrites=true&w=majority
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: snapurl_frontend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
