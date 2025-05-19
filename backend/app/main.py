@@ -1,12 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 import os
-from .utils import save_upload_file, UPLOAD_FOLDER
-from .models import Image
+from .utils import UPLOAD_FOLDER
 from dotenv import load_dotenv
 import logging
 from bson import ObjectId
@@ -16,7 +14,7 @@ import shutil
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
+# Load .env only for MONGODB_URL
 load_dotenv()
 
 app = FastAPI(title="SnapURL API")
@@ -24,7 +22,7 @@ app = FastAPI(title="SnapURL API")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, set this to your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,44 +42,44 @@ except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
-# Create uploads directory if it doesn't exist
+# Ensure upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# Mount the uploads directory
 app.mount("/images", StaticFiles(directory=UPLOAD_FOLDER), name="images")
 
-# Get the deployed domain from environment variable or use a default
-DEPLOYED_DOMAIN = os.getenv("DEPLOYED_DOMAIN", "https://snapurl-xrth.onrender.com")
+# Hard‑coded public URL of your Render deployment
+BASE_URL = "https://snapurl-xrth.onrender.com"
 
-# API routes with /api prefix
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        # Create a safe filename
+        # Build a timestamped filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         safe_filename = f"{timestamp}_{file.filename}"
         file_path = os.path.join(UPLOAD_FOLDER, safe_filename)
-        
-        # Save the file
+
+        # Save the file to disk
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
-        # Create image document
+
+        # Construct the public URL
+        url = f"{BASE_URL}/images/{safe_filename}"
+
+        # Insert into MongoDB
         image_doc = {
             "filename": safe_filename,
             "original_filename": file.filename,
-            "url": f"{DEPLOYED_DOMAIN}/images/{safe_filename}",
+            "url": url,
             "uploaded_at": datetime.utcnow()
         }
-        
-        # Save to MongoDB
         result = await images.insert_one(image_doc)
         image_doc["_id"] = str(result.inserted_id)
-        
+
         return image_doc
+
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/images")
 async def get_images():
@@ -96,31 +94,31 @@ async def get_images():
         logger.error(f"Error fetching images: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.delete("/api/images/{image_id}")
 async def delete_image(image_id: str):
     try:
-        # Get image details from MongoDB
         image = await images.find_one({"_id": ObjectId(image_id)})
         if not image:
             raise HTTPException(status_code=404, detail="Image not found")
-        
-        # Delete file from filesystem
+
+        # Remove file
         file_path = os.path.join(UPLOAD_FOLDER, image["filename"])
         if os.path.exists(file_path):
             os.remove(file_path)
-        
-        # Delete from MongoDB
+
+        # Delete DB record
         await images.delete_one({"_id": ObjectId(image_id)})
-        
+
         return {"message": "Image deleted successfully"}
     except Exception as e:
         logger.error(f"Error deleting image: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/health")
 async def health_check():
     try:
-        # Test MongoDB connection
         await client.admin.command('ping')
         return {
             "status": "healthy",
@@ -128,10 +126,10 @@ async def health_check():
             "mongodb": "connected"
         }
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
+        logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Root endpoint
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to SnapURL API. Visit /docs for API documentation."}

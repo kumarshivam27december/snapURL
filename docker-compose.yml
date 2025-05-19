@@ -46,3 +46,31 @@ jobs:
           tags: kumarshivam27december/snapurl-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb+srv://kumarshivam27december:shivam123@cluster0.mongodb.net/snapurl?retryWrites=true&w=majority&appName=Cluster0
+      - DEPLOYED_DOMAIN=https://snapurl-xrth.onrender.com
+    volumes:
+      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=https://snapurl-xrth.onrender.com/api
+    depends_on:
+      - backend
+    restart: unless-stopped
